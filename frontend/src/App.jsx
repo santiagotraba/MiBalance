@@ -1,5 +1,5 @@
 // MiBalance - Aplicación de finanzas personales
-// Trigger deploy for Vercel
+// Trigger deploy for Vercel - Force deployment v2
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Layout from "./components/Layout";
