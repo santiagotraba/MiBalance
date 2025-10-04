@@ -51,6 +51,34 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// Ruta temporal para ejecutar migraciones
+app.post('/api/migrate', async (req, res) => {
+    try {
+        const { exec } = require('child_process');
+        exec('npm run db:migrate', (error, stdout, stderr) => {
+            if (error) {
+                console.error('Error ejecutando migraciones:', error);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Error ejecutando migraciones',
+                    details: error.message
+                });
+            }
+            res.json({
+                success: true,
+                message: 'Migraciones ejecutadas exitosamente',
+                output: stdout
+            });
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Error interno',
+            details: error.message
+        });
+    }
+});
+
 // Ruta temporal para ejecutar seed
 app.post('/api/seed', async (req, res) => {
     try {
