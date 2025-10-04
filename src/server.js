@@ -51,6 +51,34 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// Ruta temporal para crear tablas
+app.post('/api/db-push', async (req, res) => {
+    try {
+        const { exec } = require('child_process');
+        exec('npx prisma db push', (error, stdout, stderr) => {
+            if (error) {
+                console.error('Error creando tablas:', error);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Error creando tablas',
+                    details: error.message
+                });
+            }
+            res.json({
+                success: true,
+                message: 'Tablas creadas exitosamente',
+                output: stdout
+            });
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Error interno',
+            details: error.message
+        });
+    }
+});
+
 // Ruta temporal para ejecutar migraciones
 app.post('/api/migrate', async (req, res) => {
     try {
