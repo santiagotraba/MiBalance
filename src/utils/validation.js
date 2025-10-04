@@ -23,9 +23,9 @@ const categorySchema = Joi.object({
 // Validaciones de transacciones
 const transactionSchema = Joi.object({
     amount: Joi.number().positive().precision(2).required(),
-    description: Joi.string().max(500).required(),
+    description: Joi.string().max(500).optional(),
     type: Joi.string().valid('INCOME', 'EXPENSE').required(),
-    categoryId: Joi.number().integer().positive().optional().allow(null),
+    categoryId: Joi.number().integer().positive().optional(),
     date: Joi.date().max('now').required()
 });
 

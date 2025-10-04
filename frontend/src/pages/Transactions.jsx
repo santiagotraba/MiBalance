@@ -71,20 +71,13 @@ const Transactions = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Preparar los datos para enviar
-      const dataToSend = {
-        ...formData,
-        amount: parseFloat(formData.amount),
-        categoryId: formData.categoryId ? parseInt(formData.categoryId) : null
-      };
-
       if (editingTransaction) {
         await transactionService.updateTransaction(
           editingTransaction.id,
-          dataToSend
+          formData
         );
       } else {
-        await transactionService.createTransaction(dataToSend);
+        await transactionService.createTransaction(formData);
       }
       setShowModal(false);
       setEditingTransaction(null);
@@ -107,7 +100,7 @@ const Transactions = () => {
       amount: transaction.amount.toString(),
       description: transaction.description,
       type: transaction.type,
-      categoryId: transaction.categoryId ? transaction.categoryId.toString() : "",
+      categoryId: transaction.categoryId.toString(),
       date: transaction.date.split("T")[0],
     });
     setShowModal(true);
