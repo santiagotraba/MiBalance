@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://mibalance-backend.onrender.com/api';
 
 export const categoryService = {
     async getCategories(type = null) {
@@ -12,25 +12,25 @@ export const categoryService = {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             });
-            
+
             // Verificar la estructura de la respuesta
             console.log('Respuesta del backend:', response.data);
-            
+
             // Si la respuesta tiene la estructura esperada
             if (response.data && response.data.data && response.data.data.categories) {
                 return response.data.data.categories;
             }
-            
+
             // Si la respuesta es directamente un array
             if (Array.isArray(response.data)) {
                 return response.data;
             }
-            
+
             // Si la respuesta tiene categorías en el nivel superior
             if (response.data.categories) {
                 return response.data.categories;
             }
-            
+
             // Si no hay categorías, devolver array vacío
             return [];
         } catch (error) {

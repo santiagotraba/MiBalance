@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://mibalance-backend.onrender.com/api';
 
 export const transactionService = {
     async getTransactions(params = {}) {
@@ -11,25 +11,25 @@ export const transactionService = {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             });
-            
+
             // Verificar la estructura de la respuesta
             console.log('Respuesta del backend (transacciones):', response.data);
-            
+
             // Si la respuesta tiene la estructura esperada
             if (response.data && response.data.data && response.data.data.transactions) {
                 return response.data.data.transactions;
             }
-            
+
             // Si la respuesta es directamente un array
             if (Array.isArray(response.data)) {
                 return response.data;
             }
-            
+
             // Si la respuesta tiene transacciones en el nivel superior
             if (response.data.transactions) {
                 return response.data.transactions;
             }
-            
+
             // Si no hay transacciones, devolver array vacío
             return [];
         } catch (error) {
