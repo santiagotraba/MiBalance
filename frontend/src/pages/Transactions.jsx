@@ -8,6 +8,7 @@ const Transactions = () => {
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [filters, setFilters] = useState({
@@ -31,14 +32,31 @@ const Transactions = () => {
   const loadData = async () => {
     try {
       setLoading(true);
+      setError(null);
       const [transactionsData, categoriesData] = await Promise.all([
         transactionService.getTransactions(),
         categoryService.getCategories(),
       ]);
-      setTransactions(transactionsData);
-      setCategories(categoriesData);
+      
+      // Asegurar que los datos sean arrays
+      if (Array.isArray(transactionsData)) {
+        setTransactions(transactionsData);
+      } else {
+        console.error("Datos de transacciones recibidos no son un array:", transactionsData);
+        setTransactions([]);
+      }
+      
+      if (Array.isArray(categoriesData)) {
+        setCategories(categoriesData);
+      } else {
+        console.error("Datos de categorías recibidos no son un array:", categoriesData);
+        setCategories([]);
+      }
     } catch (error) {
       console.error("Error cargando datos:", error);
+      setError("Error al cargar los datos. Por favor, intenta de nuevo.");
+      setTransactions([]);
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -111,6 +129,33 @@ const Transactions = () => {
 
   if (loading) return <LoadingSpinner />;
 
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Transacciones</h1>
+        </div>
+        <div className="text-center py-12">
+          <div className="text-red-600 mb-4">
+            <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Error al cargar transacciones
+          </h3>
+          <p className="text-gray-500 mb-6">{error}</p>
+          <button
+            onClick={loadData}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -153,7 +198,7 @@ const Transactions = () => {
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Todas</option>
-              {categories.map((category) => (
+              {Array.isArray(categories) && categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
                 </option>
@@ -207,69 +252,98 @@ const Transactions = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredTransactions.map((transaction) => {
-                const category = categories.find(
-                  (c) => c.id === transaction.categoryId
-                );
-                return (
-                  <tr key={transaction.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(transaction.date).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {transaction.description}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <span
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                        style={{
-                          backgroundColor: category?.color + "20",
-                          color: category?.color,
-                        }}
+              {!Array.isArray(filteredTransactions) || filteredTransactions.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center">
+                      <div className="text-gray-400 mb-4">
+                        <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        No hay transacciones
+                      </h3>
+                      <p className="text-gray-500 mb-6">
+                        {!Array.isArray(transactions) || transactions.length === 0 
+                          ? "Crea tu primera transacción para comenzar a gestionar tus finanzas"
+                          : "No se encontraron transacciones con los filtros aplicados"}
+                      </p>
+                      <button
+                        onClick={() => setShowModal(true)}
+                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center gap-2"
                       >
-                        {category?.name}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        <Plus className="w-5 h-5" />
+                        Nueva Transacción
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredTransactions.map((transaction) => {
+                  const category = Array.isArray(categories) 
+                    ? categories.find((c) => c.id === transaction.categoryId)
+                    : null;
+                  return (
+                    <tr key={transaction.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {new Date(transaction.date).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {transaction.description}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                          style={{
+                            backgroundColor: category?.color + "20",
+                            color: category?.color,
+                          }}
+                        >
+                          {category?.name || "Sin categoría"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            transaction.type === "INCOME"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {transaction.type === "INCOME" ? "Ingreso" : "Gasto"}
+                        </span>
+                      </td>
+                      <td
+                        className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
                           transaction.type === "INCOME"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
+                            ? "text-green-600"
+                            : "text-red-600"
                         }`}
                       >
-                        {transaction.type === "INCOME" ? "Ingreso" : "Gasto"}
-                      </span>
-                    </td>
-                    <td
-                      className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
-                        transaction.type === "INCOME"
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {transaction.type === "INCOME" ? "+" : "-"}$
-                      {transaction.amount.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleEdit(transaction)}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(transaction.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                        {transaction.type === "INCOME" ? "+" : "-"}$
+                        {transaction.amount.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleEdit(transaction)}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(transaction.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -342,7 +416,7 @@ const Transactions = () => {
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Seleccionar categoría</option>
-                    {categories.map((category) => (
+                    {Array.isArray(categories) && categories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.name}
                       </option>

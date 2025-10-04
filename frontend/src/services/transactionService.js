@@ -11,7 +11,27 @@ export const transactionService = {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             });
-            return response.data;
+            
+            // Verificar la estructura de la respuesta
+            console.log('Respuesta del backend (transacciones):', response.data);
+            
+            // Si la respuesta tiene la estructura esperada
+            if (response.data && response.data.data && response.data.data.transactions) {
+                return response.data.data.transactions;
+            }
+            
+            // Si la respuesta es directamente un array
+            if (Array.isArray(response.data)) {
+                return response.data;
+            }
+            
+            // Si la respuesta tiene transacciones en el nivel superior
+            if (response.data.transactions) {
+                return response.data.transactions;
+            }
+            
+            // Si no hay transacciones, devolver array vacío
+            return [];
         } catch (error) {
             console.error('Error obteniendo transacciones:', error);
             throw error;
@@ -25,7 +45,7 @@ export const transactionService = {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             });
-            return response.data;
+            return response.data.data.transaction;
         } catch (error) {
             console.error('Error obteniendo transacción:', error);
             throw error;
@@ -39,7 +59,7 @@ export const transactionService = {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             });
-            return response.data;
+            return response.data.data.transaction;
         } catch (error) {
             console.error('Error creando transacción:', error);
             throw error;
@@ -53,7 +73,7 @@ export const transactionService = {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             });
-            return response.data;
+            return response.data.data.transaction;
         } catch (error) {
             console.error('Error actualizando transacción:', error);
             throw error;
