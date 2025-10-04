@@ -21,7 +21,11 @@ const PORT = process.env.PORT || 5003;
 // Middleware de seguridad
 app.use(helmet());
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: [
+        process.env.FRONTEND_URL || 'http://localhost:3000',
+        'https://mibalance-app.vercel.app',
+        'https://*.vercel.app'
+    ],
     credentials: true
 }));
 
