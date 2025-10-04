@@ -66,7 +66,7 @@ export const analyticsService = {
             // Calcular fechas basadas en el rango de tiempo
             const endDate = new Date();
             const startDate = new Date();
-            
+
             switch (timeRange) {
                 case '7':
                     startDate.setDate(endDate.getDate() - 7);
@@ -100,36 +100,36 @@ export const analyticsService = {
                 totalIncome: balanceData.data.totalIncome,
                 totalExpense: balanceData.data.totalExpenses,
                 balance: balanceData.data.balance,
-                savingsRate: balanceData.data.totalIncome > 0 
-                    ? ((balanceData.data.totalIncome - balanceData.data.totalExpenses) / balanceData.data.totalIncome) * 100 
+                savingsRate: balanceData.data.totalIncome > 0
+                    ? ((balanceData.data.totalIncome - balanceData.data.totalExpenses) / balanceData.data.totalIncome) * 100
                     : 0,
-                
+
                 expenseByCategory: expenseCategories.data.categories.map(cat => ({
                     category: cat.categoryName,
                     amount: cat.amount,
                     color: cat.categoryColor,
                     percentage: cat.percentage
                 })),
-                
+
                 incomeByCategory: incomeCategories.data.categories.map(cat => ({
                     category: cat.categoryName,
                     amount: cat.amount,
                     color: cat.categoryColor,
                     percentage: cat.percentage
                 })),
-                
+
                 monthlyTrend: monthlyTrends.data.monthlyData.slice(-6).map(month => ({
                     month: month.monthName,
                     income: month.income,
                     expense: month.expense
                 })),
-                
+
                 topExpenses: expenseCategories.data.categories.slice(0, 5).map(cat => ({
                     category: cat.categoryName,
                     amount: cat.amount,
                     color: cat.categoryColor
                 })),
-                
+
                 topIncomes: incomeCategories.data.categories.slice(0, 5).map(cat => ({
                     category: cat.categoryName,
                     amount: cat.amount,
