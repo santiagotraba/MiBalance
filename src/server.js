@@ -50,6 +50,34 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// Ruta temporal para ejecutar seed
+app.post('/api/seed', async (req, res) => {
+    try {
+        const { exec } = require('child_process');
+        exec('npm run db:seed', (error, stdout, stderr) => {
+            if (error) {
+                console.error('Error ejecutando seed:', error);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Error ejecutando seed',
+                    details: error.message
+                });
+            }
+            res.json({
+                success: true,
+                message: 'Seed ejecutado exitosamente',
+                output: stdout
+            });
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Error interno',
+            details: error.message
+        });
+    }
+});
+
 // Middleware de manejo de errores
 app.use(notFound);
 app.use(errorHandler);
