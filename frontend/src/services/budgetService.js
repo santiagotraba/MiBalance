@@ -11,7 +11,22 @@ const budgetService = {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             });
-            return response.data;
+
+            // Verificar la estructura de la respuesta
+            console.log('Respuesta del backend (presupuestos):', response.data);
+
+            // Si la respuesta tiene la estructura esperada
+            if (response.data && response.data.data && response.data.data.budgets) {
+                return response.data.data.budgets;
+            }
+
+            // Si la respuesta es directamente un array
+            if (Array.isArray(response.data)) {
+                return response.data;
+            }
+
+            // Si no hay presupuestos, devolver array vacío
+            return [];
         } catch (error) {
             console.error('Error obteniendo presupuestos:', error);
             throw error;
@@ -26,7 +41,7 @@ const budgetService = {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             });
-            return response.data;
+            return response.data.data.budget;
         } catch (error) {
             console.error('Error creando presupuesto:', error);
             throw error;
@@ -41,7 +56,7 @@ const budgetService = {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             });
-            return response.data;
+            return response.data.data.budget;
         } catch (error) {
             console.error('Error actualizando presupuesto:', error);
             throw error;
@@ -71,7 +86,19 @@ const budgetService = {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             });
-            return response.data;
+
+            // Verificar la estructura de la respuesta
+            if (response.data && response.data.data && response.data.data.budgets) {
+                return response.data.data.budgets;
+            }
+
+            // Si la respuesta es directamente un array
+            if (Array.isArray(response.data)) {
+                return response.data;
+            }
+
+            // Si no hay presupuestos, devolver array vacío
+            return [];
         } catch (error) {
             console.error('Error obteniendo presupuestos por mes:', error);
             throw error;

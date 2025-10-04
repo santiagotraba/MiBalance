@@ -40,10 +40,19 @@ const Budgets = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Convertir el formato de mes de "YYYY-MM" a month y year separados
+      const [year, month] = formData.month.split("-");
+      const budgetData = {
+        categoryId: parseInt(formData.categoryId),
+        budgetAmount: parseFloat(formData.amount),
+        month: parseInt(month),
+        year: parseInt(year),
+      };
+
       if (editingBudget) {
-        await budgetService.updateBudget(editingBudget.id, formData);
+        await budgetService.updateBudget(editingBudget.id, budgetData);
       } else {
-        await budgetService.createBudget(formData);
+        await budgetService.createBudget(budgetData);
       }
       setShowModal(false);
       setEditingBudget(null);
@@ -60,10 +69,14 @@ const Budgets = () => {
 
   const handleEdit = (budget) => {
     setEditingBudget(budget);
+    // Convertir month y year a formato "YYYY-MM"
+    const monthString = `${budget.year}-${budget.month
+      .toString()
+      .padStart(2, "0")}`;
     setFormData({
       categoryId: budget.categoryId.toString(),
-      amount: budget.amount.toString(),
-      month: budget.month,
+      amount: budget.budgetAmount.toString(),
+      month: monthString,
     });
     setShowModal(true);
   };
@@ -82,8 +95,8 @@ const Budgets = () => {
   };
 
   const getBudgetStatus = (budget) => {
-    const spent = budget.spent || 0;
-    const percentage = (spent / budget.amount) * 100;
+    const spent = budget.actualSpent || 0;
+    const percentage = (spent / budget.budgetAmount) * 100;
 
     if (percentage >= 100) {
       return {
@@ -108,11 +121,16 @@ const Budgets = () => {
 
   const getCurrentMonth = () => {
     const now = new Date();
-    return now.toISOString().slice(0, 7);
+    return {
+      month: now.getMonth() + 1,
+      year: now.getFullYear(),
+    };
   };
 
+  const currentMonth = getCurrentMonth();
   const currentMonthBudgets = budgets.filter(
-    (budget) => budget.month === getCurrentMonth()
+    (budget) =>
+      budget.month === currentMonth.month && budget.year === currentMonth.year
   );
 
   if (loading) return <LoadingSpinner />;
@@ -141,7 +159,7 @@ const Budgets = () => {
             <p className="text-2xl font-bold text-blue-600">
               $
               {currentMonthBudgets
-                .reduce((sum, budget) => sum + budget.amount, 0)
+                .reduce((sum, budget) => sum + budget.budgetAmount, 0)
                 .toLocaleString()}
             </p>
           </div>
@@ -150,7 +168,7 @@ const Budgets = () => {
             <p className="text-2xl font-bold text-red-600">
               $
               {currentMonthBudgets
-                .reduce((sum, budget) => sum + (budget.spent || 0), 0)
+                .reduce((sum, budget) => sum + (budget.actualSpent || 0), 0)
                 .toLocaleString()}
             </p>
           </div>
@@ -160,11 +178,11 @@ const Budgets = () => {
               $
               {(
                 currentMonthBudgets.reduce(
-                  (sum, budget) => sum + budget.amount,
+                  (sum, budget) => sum + budget.budgetAmount,
                   0
                 ) -
                 currentMonthBudgets.reduce(
-                  (sum, budget) => sum + (budget.spent || 0),
+                  (sum, budget) => sum + (budget.actualSpent || 0),
                   0
                 )
               ).toLocaleString()}
@@ -177,8 +195,8 @@ const Budgets = () => {
       <div className="space-y-4">
         {currentMonthBudgets.map((budget) => {
           const category = categories.find((c) => c.id === budget.categoryId);
-          const spent = budget.spent || 0;
-          const percentage = (spent / budget.amount) * 100;
+          const spent = budget.actualSpent || 0;
+          const percentage = (spent / budget.budgetAmount) * 100;
           const status = getBudgetStatus(budget);
 
           return (
@@ -195,7 +213,9 @@ const Budgets = () => {
                     <h3 className="font-semibold text-gray-900">
                       {category?.name}
                     </h3>
-                    <p className="text-sm text-gray-500">{budget.month}</p>
+                    <p className="text-sm text-gray-500">
+                      {budget.month}/{budget.year}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -242,7 +262,7 @@ const Budgets = () => {
                 <div>
                   <p className="text-gray-600">Presupuestado</p>
                   <p className="font-semibold text-gray-900">
-                    ${budget.amount.toLocaleString()}
+                    ${budget.budgetAmount.toLocaleString()}
                   </p>
                 </div>
                 <div>
@@ -255,12 +275,12 @@ const Budgets = () => {
                   <p className="text-gray-600">Restante</p>
                   <p
                     className={`font-semibold ${
-                      budget.amount - spent >= 0
+                      budget.budgetAmount - spent >= 0
                         ? "text-green-600"
                         : "text-red-600"
                     }`}
                   >
-                    ${(budget.amount - spent).toLocaleString()}
+                    ${(budget.budgetAmount - spent).toLocaleString()}
                   </p>
                 </div>
               </div>
