@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5003/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003/api';
 
 export const categoryService = {
     async getCategories(type = null) {
